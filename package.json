@@ -1,0 +1,91 @@
+{
+  "name": "x-financial-arbitration-analysis-worker",
+  "version": "1.0.0",
+  "description": "it summarizes data from different exchanges to provide information of buying/selling periods",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "local": "NODE_CONFIG_DIR=./src/config NODE_ENV=development npm run migrate && node src/index.js",
+    "migrate": "NODE_CONFIG_DIR=./src/config NODE_ENV=development knex migrate:latest",
+    "test": "npm run lint && NODE_ENV=test nyc npm run test-mocha",
+    "test-mocha": "NODE_CONFIG_DIR=./src/config NODE_ENV=test mocha --harmony --exit ./src/**/*.spec.js",
+    "precommit": "npm run git-hook",
+    "prepush": "npm run git-hook",
+    "git-hook": "npm run lint -s && npm run test -s",
+    "lint": "standard --verbose | snazzy",
+    "fixcode": "standard --fix",
+    "coverage": "NODE_ENV=test nyc report --reporter=text-lcov | coveralls"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/LuanP/x-financial-arbitration-analysis-worker.git"
+  },
+  "keywords": [
+    "worker",
+    "financial",
+    "arbitration",
+    "analysis"
+  ],
+  "author": "Luan Pablo",
+  "license": "CC-BY-NC-ND-4.0",
+  "bugs": {
+    "url": "https://gitlab.com/LuanP/x-financial-arbitration-analysis-worker/issues"
+  },
+  "homepage": "https://gitlab.com/LuanP/x-financial-arbitration-analysis-worker#README",
+  "dependencies": {
+    "bunyan": "^1.8.12",
+    "config": "^1.30.0",
+    "knex": "^0.14.4",
+    "mysql2": "^1.5.2",
+    "ramda": "^0.25.0",
+    "sequelize": "^4.35.0"
+  },
+  "engines": {
+    "node": "8.9.4",
+    "npm": "5.6.0"
+  },
+  "standard": {
+    "parser": "babel-eslint",
+    "globals": [
+      "describe",
+      "it",
+      "test",
+      "beforeEach",
+      "after"
+    ]
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.js",
+      "src/**/**/*.js"
+    ],
+    "require": [
+      "babel-register"
+    ],
+    "exclude": [
+      "packages/**/*"
+    ],
+    "sourceMap": true,
+    "instrument": true,
+    "all": true
+  },
+  "devDependencies": {
+    "assert": "^1.4.1",
+    "babel-eslint": "^8.2.2",
+    "babel-plugin-istanbul": "^4.1.5",
+    "babel-preset-env": "^1.6.1",
+    "babel-register": "^6.26.0",
+    "chai": "^4.1.2",
+    "coveralls": "^3.0.0",
+    "cross-env": "^5.1.3",
+    "dotenv": "^5.0.1",
+    "husky": "^0.14.3",
+    "mocha": "^5.0.1",
+    "mocha-lcov-reporter": "^1.3.0",
+    "nyc": "^11.4.1",
+    "should": "^13.2.1",
+    "sinon": "^4.4.2",
+    "snazzy": "^7.1.0",
+    "standard": "^11.0.0"
+  }
+}

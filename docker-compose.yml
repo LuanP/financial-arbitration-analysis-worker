@@ -1,0 +1,36 @@
+version: '3'
+services:
+  mysqldb:
+    image: "mysql:latest"
+    ports:
+      - "3400:3400"
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: x-financial-arbitration
+      MYSQL_USER: worker
+      MYSQL_PASSWORD: worker
+  worker:
+    build: .
+    environment:
+      PORT: 5000
+      NODE_CONFIG_DIR: ./src/config
+      NODE_ENV: development
+      DB_NAME: x-financial-arbitration
+      DB_HOST: mysqldb
+      DB_PORT: 3400
+      DB_USER: worker
+      DB_PASSWORD: worker
+    ports:
+      - "5000:5000"
+    links:
+      - mysqldb
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - mysqldb
+volumes:
+  db_data:

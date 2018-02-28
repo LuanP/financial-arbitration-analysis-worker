@@ -1,0 +1,17 @@
+image: node:latest
+
+cache:
+  paths:
+  - node_modules/
+
+test:
+  script:
+   - npm install
+   - npm test
+  coverage: '/^All files +\| +(\d+\.\d+) \|/'
+  artifacts:
+    name: coverage
+    expire_in: 30d
+    when: always
+    paths:
+     - coverage/
