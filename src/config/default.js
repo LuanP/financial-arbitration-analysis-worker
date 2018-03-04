@@ -39,6 +39,44 @@ const base = {
       }
     }
   },
+  exchanges: [
+    {
+      exchangeName: 'binance',
+      name: process.env.BINANCE_DB_NAME || 'db',
+      username: process.env.BINANCE_DB_USERNAME || 'worker',
+      password: process.env.BINANCE_DB_PASSWORD || 'worker',
+      options: {
+        dialect: 'mysql',
+        host: process.env.BINANCE_DB_HOST || 'localhost',
+        port: process.env.BINANCE_DB_PORT || 3307,
+        debug: process.env.BINANCE_DB_DEBUG || false,
+        logging: process.env.BINANCE_DB_LOGGING || undefined,
+        pool: {
+          max: process.env.BINANCE_DB_POOL_MAX || 20,
+          min: process.env.BINANCE_DB_POOL_MIN || 5,
+          idle: process.env.BINANCE_DB_POOL_IDLE || 10000
+        }
+      }
+    },
+    {
+      exchangeName: 'bittrex',
+      name: process.env.BITTREX_DB_NAME || 'db',
+      username: process.env.BITTREX_DB_USERNAME || 'worker',
+      password: process.env.BITTREX_DB_PASSWORD || 'worker',
+      options: {
+        dialect: 'mysql',
+        host: process.env.BITTREX_DB_HOST || 'localhost',
+        port: process.env.BITTREX_DB_PORT || 3308,
+        debug: process.env.BITTREX_DB_DEBUG || false,
+        logging: process.env.BITTREX_DB_LOGGING || undefined,
+        pool: {
+          max: process.env.BITTREX_DB_POOL_MAX || 20,
+          min: process.env.BITTREX_DB_POOL_MIN || 5,
+          idle: process.env.BITTREX_DB_POOL_IDLE || 10000
+        }
+      }
+    }
+  ],
   logging: {
     level: process.env.LOGGING_LEVEL || 'debug',
     project: {

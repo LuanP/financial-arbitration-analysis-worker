@@ -3,7 +3,7 @@ services:
   mysqldb:
     image: "mysql:latest"
     ports:
-      - "3400:3400"
+      - "3500:3306"
     volumes:
       - db_data:/var/lib/mysql
     restart: always
@@ -20,7 +20,7 @@ services:
       NODE_ENV: development
       DB_NAME: x-financial-arbitration
       DB_HOST: mysqldb
-      DB_PORT: 3400
+      DB_PORT: 3306
       DB_USER: worker
       DB_PASSWORD: worker
     ports:
