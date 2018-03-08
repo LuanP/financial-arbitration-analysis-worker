@@ -1,7 +1,6 @@
 const R = require('ramda')
-const axios = require('axios')
 const config = require('config')
-const normalize = require('x-cryptocurrencies-normalizr')
+const moment = require('moment')
 const math = require('./utils/math')
 const logger = require('./utils/logging').logger
 const Op = require('sequelize').Op
@@ -11,6 +10,21 @@ const Summary = require('./utils/sequelize-summaries').Summary
 const exchangeNames = R.map((obj) => obj.exchangeName, config.exchanges)
 
 const Worker = () => {}
+
+Worker.amountPeriod = (obj) => {
+  const data = R.split(':', obj)
+  
+  return {
+    amount: data[0],
+    period: data[1]
+  }
+}
+
+Worker.getSummaryDataInterval = (obj) => {
+  const splitIntervals = R.split(',', obj)
+
+  return R.map((obj) => Worker.amountPeriod(obj), splitIntervals)
+}
 
 Worker.summarizeSpecificExchange = (data, exchangeName, interval) => {
   /*
@@ -40,7 +54,7 @@ Worker.summarizeSpecificExchange = (data, exchangeName, interval) => {
   // pairPrices is now a dictionary that contains normalized pairs as keys
   // and prices of the provided interval as values in a list
 
-  const summarizeSpecificExchange = (values, key) => {
+  const summarizeExchangePair = (values, key) => {
     /*
      * values is a list of prices
      * key is a normalized pair
@@ -50,7 +64,7 @@ Worker.summarizeSpecificExchange = (data, exchangeName, interval) => {
     let createdAtList = R.map((obj) => obj.createdAt, values)
     let highestCreatedAt = math.highest(createdAtList)
 
-    let lastPrice = R.find(R.propEq('createdAt', highestCreatedAt))(values).price
+    let lastPrice = R.find(R.propEq('createdAt', new Date(highestCreatedAt)))(values).price
 
     return {
       mean: math.mean(prices),
@@ -63,6 +77,7 @@ Worker.summarizeSpecificExchange = (data, exchangeName, interval) => {
   }
 
   let summary = R.forEachObjIndexed(summarizeExchangePair, pairPrices)
+  console.log('summary', JSON.stringify(summary))
 
   return summary
 }
@@ -75,12 +90,13 @@ Worker.summarize = (exchangesData, interval) => {
     let currentExchangeData = exchangesData[i]
     let currentExchangeName = R.keys(currentExchangeData)[0]
 
-    exchangeSummaries.push(
-      Worker.summarizeSpecificExchange(currentExchangeData[currentExchangeName], exchangeName, interval)
+    exchangesSummaries.push(
+      Worker.summarizeSpecificExchange(currentExchangeData[currentExchangeName], currentExchangeName, interval)
     )
   }
 
-  // in each object of exchangeSummaries we will have
+
+  // in each object of exchangesSummaries we will have
   // the key is a normalized pair and values:
   // mean
   // median
@@ -88,8 +104,8 @@ Worker.summarize = (exchangesData, interval) => {
   // lowest
   // highest
   // last
-  for (let normalizedPair in exchangeSummaries) {
-    let currentExchangeSummary = exchangeSummaries[normalizedPair]
+  for (let normalizedPair in exchangesSummaries) {
+    let currentExchangeSummary = exchangesSummaries[normalizedPair]
 
     if (summary[normalizedPair] === undefined) {
       summary[normalizedPair] = {
@@ -126,6 +142,9 @@ Worker.getData = (params) => {
     const currentExchange = exchangeNames[i]
 
     let ExchangeData = sequelizeExchanges[currentExchange].Data
+    console.log(currentExchange)
+    console.log(params)
+    console.log(ExchangeData)
 
     promiseList.push(
       new Promise((resolve, reject) => {
@@ -141,7 +160,7 @@ Worker.getData = (params) => {
     )
   }
 
-  return promiseList
+  return Promise.all(promiseList)
 }
 
 Worker.getDataFromInterval = (interval) => {
@@ -162,11 +181,20 @@ Worker.getDataFromInterval = (interval) => {
 }
 
 Worker.call = async () => {
-  let promisesList = []
-  for (let i = 0; i < config.data.intervals.length; i++) {
-    let currentInterval = config.data.intervals[i]
+  let promiseList = []
 
-    promisesList.push(
+  if (!config.summary || !config.summary.data || !config.summary.data.intervals) {
+    throw new Error(
+      'no interval provided. Provide a list of intervals separated by comma in the `SUMMARY_DATA_INTERVALS` variable'
+    )
+  }
+
+  const summaryDataIntervals = Worker.getSummaryDataInterval(config.summary.data.intervals)
+
+  for (let i = 0; i < summaryDataIntervals.length; i++) {
+    let currentInterval = summaryDataIntervals[i]
+
+    promiseList.push(
       new Promise((resolve, reject) => {
         Worker.getDataFromInterval(currentInterval)
       }).then(() => resolve())
@@ -178,7 +206,7 @@ Worker.call = async () => {
     )
   }
 
-  return promisesList
+  return Promise.all(promiseList)
 }
 
 Worker.start = () => {

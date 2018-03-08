@@ -9,6 +9,11 @@ try {
 }
 
 const base = {
+  summary: {
+    data: {
+      intervals: process.env.SUMMARY_DATA_INTERVALS || '10:minutes,30:minutes,1:hour,3:hours,6:hours'
+    }
+  },
   exchange: {
     symbol: {
       delimiter: process.env.SYMBOL_DELIMITER || '-'
@@ -47,7 +52,7 @@ const base = {
       password: process.env.BINANCE_DB_PASSWORD || 'worker',
       options: {
         dialect: 'mysql',
-        host: process.env.BINANCE_DB_HOST || 'localhost',
+        host: process.env.BINANCE_DB_HOST || '0.0.0.0',
         port: process.env.BINANCE_DB_PORT || 3307,
         debug: process.env.BINANCE_DB_DEBUG || false,
         logging: process.env.BINANCE_DB_LOGGING || undefined,
@@ -65,7 +70,7 @@ const base = {
       password: process.env.BITTREX_DB_PASSWORD || 'worker',
       options: {
         dialect: 'mysql',
-        host: process.env.BITTREX_DB_HOST || 'localhost',
+        host: process.env.BITTREX_DB_HOST || '0.0.0.0',
         port: process.env.BITTREX_DB_PORT || 3308,
         debug: process.env.BITTREX_DB_DEBUG || false,
         logging: process.env.BITTREX_DB_LOGGING || undefined,

@@ -34,9 +34,11 @@
   "homepage": "https://gitlab.com/LuanP/x-financial-arbitration-analysis-worker#README",
   "dependencies": {
     "bunyan": "^1.8.12",
+    "chalk": "^2.3.2",
     "config": "^1.30.0",
     "knex": "^0.14.4",
     "mathjs": "^4.0.0",
+    "moment": "^2.21.0",
     "mysql2": "^1.5.2",
     "ramda": "^0.25.0",
     "sequelize": "^4.35.0"

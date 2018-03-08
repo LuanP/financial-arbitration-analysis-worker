@@ -1,5 +1,4 @@
 const R = require('ramda')
-const config = require('config')
 
 module.exports = (sequelize, DataTypes) => {
   let Data = sequelize.define('Data',
@@ -39,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
       }
-    }, { tableName: config.exchange.name })
+    }, { tableName: 'binance' })
 
   Data.prototype.toJSON = function () {
     return R.pickBy((data) => !R.isNil(data) && !R.isEmpty(data), this.dataValues)

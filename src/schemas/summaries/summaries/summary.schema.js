@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TINYINT,
         allowNull: false,
         field: 'count_pair_in_exchanges'
-      }
+      },
       createdAt: {
         type: 'TIMESTAMP',
         field: 'created_at',

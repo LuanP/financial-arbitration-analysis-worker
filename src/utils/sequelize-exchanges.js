@@ -21,9 +21,12 @@ const Model = () => {}
 Model.create = (db) => {
   const models = {}
   const sequelize = new Sequelize(db.name, db.username, db.password, R.merge(db.options, defaults))
-  
+
   let resourcesPath = path.join(__dirname, '../schemas/exchanges')
   fs.readdirSync(resourcesPath).forEach((resourceName) => {
+    if (resourceName !== db.exchangeName) {
+      return
+    }
     let specificResourcePath = path.join(resourcesPath, resourceName)
   
     fs.readdirSync(specificResourcePath).filter((file) => {
@@ -55,4 +58,4 @@ for (let i = 0; i < config.exchanges.length; i++) {
   allModels[currentExchange.exchangeName] = Model.create(currentExchange)
 }
 
-module.exports = models
+module.exports = allModels

@@ -1,6 +1,6 @@
-version: '3'
+version: '3.5'
 services:
-  mysqldb:
+  db:
     image: "mysql:latest"
     ports:
       - "3500:3306"
@@ -12,6 +12,8 @@ services:
       MYSQL_DATABASE: x-financial-arbitration
       MYSQL_USER: worker
       MYSQL_PASSWORD: worker
+    networks:
+      - analysis-net
   worker:
     build: .
     environment:
@@ -19,18 +21,40 @@ services:
       NODE_CONFIG_DIR: ./src/config
       NODE_ENV: development
       DB_NAME: x-financial-arbitration
-      DB_HOST: mysqldb
+      DB_HOST: db
       DB_PORT: 3306
       DB_USER: worker
       DB_PASSWORD: worker
+      BINANCE_DB_HOST: binance_db
+      BINANCE_DB_PORT: 3306
+      BINANCE_DB_NAME: x-financial-arbitration
+      BITTREX_DB_HOST: bittrex_db
+      BITTREX_DB_PORT: 3306
+      BITTREX_DB_NAME: x-financial-arbitration
     ports:
       - "5000:5000"
     links:
-      - mysqldb
+      - db
+    external_links:
+      - xfinancialarbitrationdatacollectionworkerbinance_mysqldb_1:binance_db
+      - xfinancialarbitrationdatacollectionworkerbittrex_mysqldb_1:bittrex_db
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     depends_on:
-      - mysqldb
+      - db
+    networks:
+      - binance-db-net
+      - bittrex-db-net
+      - analysis-net
 volumes:
   db_data:
+networks:
+  analysis-net:
+    driver: bridge
+  binance-db-net:
+    external:
+      name: binance-db-net
+  bittrex-db-net:
+    external:
+      name: bittrex-db-net
