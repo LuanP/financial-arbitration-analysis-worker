@@ -1,5 +1,4 @@
 const R = require('ramda')
-const config = require('config')
 
 module.exports = (sequelize, DataTypes) => {
   let Summary = sequelize.define('Summary',
@@ -83,7 +82,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(20),
         allowNull: false,
         field: 'last_percentage_lowest_to_median_price'
-      },
+      }
     }, { tableName: 'summaries' })
 
   Summary.prototype.toJSON = function () {

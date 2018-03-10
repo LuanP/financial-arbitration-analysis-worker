@@ -13,7 +13,7 @@ const Worker = () => {}
 
 Worker.amountPeriod = (obj) => {
   const data = R.split(':', obj)
-  
+
   return {
     amount: data[0],
     period: data[1]
@@ -146,7 +146,6 @@ Worker.summarize = (exchangesData, interval) => {
         updatePercentage = true
         finalSummary.lastLowestPrice = currentPairSummary.last
         finalSummary.lastLowestPriceExchangeName = currentExchangeName
-
       }
 
       if (finalSummary.lastHighestPrice < currentPairSummary.last) {
@@ -232,13 +231,13 @@ Worker.getDataFromInterval = (interval) => {
       }
     }
   })
-  .then((exchangesData) => Worker.summarize(exchangesData, interval))
-  .then((summarizedData) => Worker.saveSummaries(summarizedData))
-  .catch((err) => {
-    logger.error(err)
+    .then((exchangesData) => Worker.summarize(exchangesData, interval))
+    .then((summarizedData) => Worker.saveSummaries(summarizedData))
+    .catch((err) => {
+      logger.error(err)
 
-    throw err
-  })
+      throw err
+    })
 }
 
 Worker.call = async () => {
@@ -258,11 +257,12 @@ Worker.call = async () => {
     promiseList.push(
       new Promise((resolve, reject) => {
         Worker.getDataFromInterval(currentInterval)
-      }).then(() => resolve())
-      .catch((err) => {
-        logger.error(err)
+          .then(() => resolve())
+          .catch((err) => {
+            logger.error(err)
 
-        return reject(err)
+            return reject(err)
+          })
       })
     )
   }

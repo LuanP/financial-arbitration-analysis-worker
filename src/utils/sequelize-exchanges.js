@@ -28,19 +28,19 @@ Model.create = (db) => {
       return
     }
     let specificResourcePath = path.join(resourcesPath, resourceName)
-  
+
     fs.readdirSync(specificResourcePath).filter((file) => {
       return (file.indexOf('.schema') >= 0 && file.indexOf('.swp') < 0)
     }).forEach((file) => {
       var model = sequelize.import(file, require(path.join(specificResourcePath, file)))
       var modelsImported = R.type(model) === 'Array' ? model : [model]
-  
+
       modelsImported.forEach((modelImported) => {
         models[modelImported.name] = modelImported
       })
     })
   })
-  
+
   Object.keys(models).forEach((modelName) => {
     if ('associate' in models[modelName]) {
       models[modelName].associate(models)

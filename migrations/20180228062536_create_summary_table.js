@@ -5,7 +5,7 @@ exports.up = (knex, Promise) => {
     table.string('base_asset', 10).notNullable()
     table.string('quote_asset', 10).notNullable()
     table.string('data_interval', 10).notNullable()
-    table.string('trend', 10).notNullable()  // up, down still (based on data interval)
+    table.string('trend', 10).notNullable() // up, down still (based on data interval)
     table.specificType('count_pair_in_exchanges', 'tinyint').notNullable()
 
     table.timestamp('created_at').defaultTo(knex.fn.now())
