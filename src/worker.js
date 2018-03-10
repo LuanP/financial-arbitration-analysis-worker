@@ -228,7 +228,7 @@ Worker.getDataFromInterval = (interval) => {
   Worker.getData({
     where: {
       createdAt: {
-        [Op.gte]: moment().subtract(interval.amount, interval.period).unix()
+        [Op.gte]: new Date(moment().subtract(interval.amount, interval.period))
       }
     }
   })
