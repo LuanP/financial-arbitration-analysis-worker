@@ -54,6 +54,8 @@ Worker.summarizeSpecificExchange = (data, exchangeName, interval) => {
   // pairPrices is now a dictionary that contains normalized pairs as keys
   // and prices of the provided interval as values in a list
 
+  let summary = {}
+
   const summarizeExchangePair = (values, key) => {
     /*
      * values is a list of prices
@@ -66,35 +68,35 @@ Worker.summarizeSpecificExchange = (data, exchangeName, interval) => {
 
     let lastPrice = R.find(R.propEq('createdAt', new Date(highestCreatedAt)))(values).price
 
-    return {
+    summary[key] = {
       mean: math.mean(prices),
       median: math.median(prices),
-      mode: math.mode(prices),
+      mode: math.mean(math.mode(prices)),
       lowest: math.lowest(prices),
       highest: math.highest(prices),
       last: lastPrice
     }
   }
 
-  let summary = R.forEachObjIndexed(summarizeExchangePair, pairPrices)
-  console.log('summary', JSON.stringify(summary))
+  R.forEachObjIndexed(summarizeExchangePair, pairPrices)
 
   return summary
 }
 
 Worker.summarize = (exchangesData, interval) => {
   let summary = {}
-  let exchangesSummaries = []
+  let exchangesSummaries = {}
 
   for (let i = 0; i < exchangesData.length; i++) {
     let currentExchangeData = exchangesData[i]
     let currentExchangeName = R.keys(currentExchangeData)[0]
 
-    exchangesSummaries.push(
-      Worker.summarizeSpecificExchange(currentExchangeData[currentExchangeName], currentExchangeName, interval)
+    exchangesSummaries[currentExchangeName] = Worker.summarizeSpecificExchange(
+      currentExchangeData[currentExchangeName],
+      currentExchangeName,
+      interval
     )
   }
-
 
   // in each object of exchangesSummaries we will have
   // the key is a normalized pair and values:
@@ -104,35 +106,97 @@ Worker.summarize = (exchangesData, interval) => {
   // lowest
   // highest
   // last
-  for (let normalizedPair in exchangesSummaries) {
-    let currentExchangeSummary = exchangesSummaries[normalizedPair]
+  for (let currentExchangeName in exchangesSummaries) {
+    let currentExchangeSummary = exchangesSummaries[currentExchangeName]
 
-    if (summary[normalizedPair] === undefined) {
-      summary[normalizedPair] = {
-        baseAsset: '',
-        quoteAsset: '',
-        dataInterval: '',
-        trend: '',
-        countPairInExchanges: 1,
-        lastLowestPrice: '',
-        lastHighestPrice: '',
-        lastLowestPriceExchangeName: '',
-        lastHighestPriceExchangeName: '',
-        lastMeanPrice: '',
-        lastMedianPrice: '',
-        lastModePrice: '',
-        lastPercentageLowestToHighestPrice: '',
-        lastPercentageLowestToMedianPrice: ''
+    for (let normalizedPair in currentExchangeSummary) {
+      let currentPairSummary = currentExchangeSummary[normalizedPair]
+
+      if (summary[normalizedPair] === undefined) {
+        let assets = R.split('-', normalizedPair)
+
+        summary[normalizedPair] = {
+          baseAsset: assets[0],
+          quoteAsset: assets[1],
+          dataInterval: `${interval.amount}:${interval.period}`,
+          trend: 'none',
+          countPairInExchanges: 1,
+          lastLowestPrice: currentPairSummary.last,
+          lastHighestPrice: currentPairSummary.last,
+          lastLowestPriceExchangeName: currentExchangeName,
+          lastHighestPriceExchangeName: currentExchangeName,
+          lastMeanPrice: [currentPairSummary.mean],
+          lastMedianPrice: [currentPairSummary.median],
+          lastModePrice: [currentPairSummary.mode],
+          lastPercentageLowestToHighestPrice: 0,
+          lastPercentageLowestToMedianPrice: 0
+        }
+
+        continue
       }
 
-      continue
-    }
+      let finalSummary = summary[normalizedPair]
+      finalSummary.countPairInExchanges++
+      finalSummary.lastMeanPrice.push(currentPairSummary.mean)
+      finalSummary.lastMedianPrice.push(currentPairSummary.median)
+      finalSummary.lastModePrice.push(currentPairSummary.mode)
 
-    summary[normalizedPair].countPairInExchanges++
-    // add values
+      let updatePercentage = false
+      if (finalSummary.lastLowestPrice > currentPairSummary.last) {
+        updatePercentage = true
+        finalSummary.lastLowestPrice = currentPairSummary.last
+        finalSummary.lastLowestPriceExchangeName = currentExchangeName
+
+      }
+
+      if (finalSummary.lastHighestPrice < currentPairSummary.last) {
+        updatePercentage = true
+        finalSummary.lastHighestPrice = currentPairSummary.last
+        finalSummary.lastHighestPriceExchangeName = currentExchangeName
+      }
+
+      if (updatePercentage === false) {
+        continue
+      }
+
+      // percentage -> ((xf - xi) / xi) * 100
+      finalSummary.lastPercentageLowestToHighestPrice = (
+        (finalSummary.lastHighestPrice - finalSummary.lastLowestPrice) / finalSummary.lastLowestPrice
+      ) * 100
+    }
+  }
+
+  for (let normalizedPair in summary) {
+    let currentSummary = summary[normalizedPair]
+    currentSummary['lastMeanPrice'] = math.mean(currentSummary['lastMeanPrice'])
+    currentSummary['lastMedianPrice'] = math.median(currentSummary['lastMedianPrice'])
+    currentSummary['lastModePrice'] = math.median(math.mode(currentSummary['lastModePrice']))
+
+    currentSummary.lastPercentageLowestToMedianPrice = (
+      (currentSummary.lastMedianPrice - currentSummary.lastLowestPrice) / currentSummary.lastLowestPrice
+    ) * 100
   }
 
   return summary
+}
+
+Worker.saveSummaries = (summarizedData) => {
+  let promiseList = []
+  for (let normalizedPair in summarizedData) {
+    let currentSummary = summarizedData[normalizedPair]
+
+    currentSummary.lastLowestPrice = currentSummary.lastLowestPrice.toString()
+    currentSummary.lastHighestPrice = currentSummary.lastHighestPrice.toString()
+    currentSummary.lastMeanPrice = currentSummary.lastMeanPrice.toString()
+    currentSummary.lastMedianPrice = currentSummary.lastMedianPrice.toString()
+    currentSummary.lastModePrice = currentSummary.lastModePrice.toString()
+    currentSummary.lastPercentageLowestToHighestPrice = currentSummary.lastPercentageLowestToHighestPrice.toString()
+    currentSummary.lastPercentageLowestToMedianPrice = currentSummary.lastPercentageLowestToMedianPrice.toString()
+
+    promiseList.push(Summary.create(currentSummary))
+  }
+
+  return promiseList
 }
 
 Worker.getData = (params) => {
@@ -142,9 +206,6 @@ Worker.getData = (params) => {
     const currentExchange = exchangeNames[i]
 
     let ExchangeData = sequelizeExchanges[currentExchange].Data
-    console.log(currentExchange)
-    console.log(params)
-    console.log(ExchangeData)
 
     promiseList.push(
       new Promise((resolve, reject) => {
@@ -172,7 +233,7 @@ Worker.getDataFromInterval = (interval) => {
     }
   })
   .then((exchangesData) => Worker.summarize(exchangesData, interval))
-  .then((summarizedData) => Summary.create(summarizedData))
+  .then((summarizedData) => Worker.saveSummaries(summarizedData))
   .catch((err) => {
     logger.error(err)
 

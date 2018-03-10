@@ -11,7 +11,7 @@ try {
 const base = {
   summary: {
     data: {
-      intervals: process.env.SUMMARY_DATA_INTERVALS || '10:minutes,30:minutes,1:hour,3:hours,6:hours'
+      intervals: process.env.SUMMARY_DATA_INTERVALS || '10:minutes,30:minutes,1:hour,3:hours'
     }
   },
   exchange: {

@@ -60,17 +60,17 @@ module.exports = (sequelize, DataTypes) => {
         field: 'last_highest_price_exchange_name'
       },
       lastMeanPrice: {
-        type: DataTypes.STRING(20),
+        type: DataTypes.STRING(40),
         allowNull: false,
         field: 'last_mean_price'
       },
       lastMedianPrice: {
-        type: DataTypes.STRING(20),
+        type: DataTypes.STRING(40),
         allowNull: false,
         field: 'last_median_price'
       },
       lastModePrice: {
-        type: DataTypes.STRING(20),
+        type: DataTypes.STRING(40),
         allowNull: false,
         field: 'last_mode_price'
       },

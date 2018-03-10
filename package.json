@@ -7,6 +7,7 @@
     "start": "node src/index.js",
     "local": "NODE_CONFIG_DIR=./src/config NODE_ENV=development npm run migrate && node src/index.js",
     "migrate": "NODE_CONFIG_DIR=./src/config NODE_ENV=development knex migrate:latest",
+    "rollback": "NODE_CONFIG_DIR=./src/config NODE_ENV=development knex migrate:rollback",
     "test": "npm run lint && NODE_ENV=test nyc npm run test-mocha",
     "test-mocha": "NODE_CONFIG_DIR=./src/config NODE_ENV=test mocha --harmony --exit ./src/**/*.spec.js",
     "precommit": "npm run git-hook",

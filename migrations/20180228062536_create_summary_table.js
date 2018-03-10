@@ -15,9 +15,9 @@ exports.up = (knex, Promise) => {
     table.string('last_lowest_price_exchange_name', 20).notNullable()
     table.string('last_highest_price_exchange_name', 20).notNullable()
 
-    table.string('last_mean_price', 20).notNullable()
-    table.string('last_median_price', 20).notNullable()
-    table.string('last_mode_price', 20).notNullable()
+    table.string('last_mean_price', 40).notNullable()
+    table.string('last_median_price', 40).notNullable()
+    table.string('last_mode_price', 40).notNullable()
 
     table.string('last_percentage_lowest_to_highest_price', 20).notNullable()
     table.string('last_percentage_lowest_to_median_price', 20).notNullable()
