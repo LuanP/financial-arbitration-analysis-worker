@@ -116,8 +116,8 @@ Worker.summarize = (exchangesData, interval) => {
         let assets = R.split('-', normalizedPair)
 
         summary[normalizedPair] = {
-          baseAsset: assets[0],
-          quoteAsset: assets[1],
+          baseAsset: assets[1],
+          quoteAsset: assets[0],
           dataInterval: `${interval.amount}:${interval.period}`,
           trend: 'none',
           countPairInExchanges: 1,
@@ -162,6 +162,7 @@ Worker.summarize = (exchangesData, interval) => {
       finalSummary.lastPercentageLowestToHighestPrice = (
         (finalSummary.lastHighestPrice - finalSummary.lastLowestPrice) / finalSummary.lastLowestPrice
       ) * 100
+      finalSummary.lastPercentageLowestToHighestPrice = math.round(finalSummary.lastPercentageLowestToHighestPrice, 2)
     }
   }
 
@@ -174,6 +175,7 @@ Worker.summarize = (exchangesData, interval) => {
     currentSummary.lastPercentageLowestToMedianPrice = (
       (currentSummary.lastMedianPrice - currentSummary.lastLowestPrice) / currentSummary.lastLowestPrice
     ) * 100
+    currentSummary.lastPercentageLowestToMedianPrice = math.round(currentSummary.lastPercentageLowestToMedianPrice, 2)
   }
 
   return summary
